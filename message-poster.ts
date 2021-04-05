@@ -4,7 +4,7 @@ import { CLEAR_DATA, ENABLE3DS, ENABLE_AUTO_SUBMIT, ENABLE_LOGGING, FOCUS, FORMA
 
 export default class MessagePoster{
 
-  constructor(private post: PostDelegate, private options: Options, private type: string, private iFrameLoaded: () => boolean) { }
+  constructor(private post: PostDelegate, private log: (message: string) => void, private type: string, private iFrameLoaded: () => boolean) { }
   
   postMessage(data: DataMessage | InitMessage | IssuerMessage) {
     if (!this.iFrameLoaded() && data.action !== PING) {
@@ -13,12 +13,6 @@ export default class MessagePoster{
       return;
     }
     this.post(data, "*");
-  }
-
-  log(message: string) {
-    if (this.options.enableLogging) {
-      console.log(`IField ${this.type}: ${message}`);
-    }
   }
 
   logAction(action: string) {
