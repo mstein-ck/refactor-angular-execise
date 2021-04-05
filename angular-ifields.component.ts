@@ -168,7 +168,7 @@ export class AngularIfieldsComponent implements AfterViewInit, OnChanges {
 
   onMessage = (e: MessageEvent) => {
     var data = e.data;
-    if (e.source !== this.elementRef.nativeElement.children[0].contentWindow) return;
+    if (e.source !== this.iframeContentWindow) return;
     switch (data.action) {
       case LOADED:
         this.log("Message received: ifield loaded");
