@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { DataMessage, Account, Options, ThreeDS, TokenData, SubmitData } from '../typings';
 import {
   PING,
@@ -45,7 +45,7 @@ const iframeSrc = `https://cdn.cardknox.com/ifields/${IFIELDS_VERSION}/ifield.ht
   styles: [
   ]
 })
-export class AngularIfieldsComponent implements AfterViewInit, OnChanges {
+export class AngularIfieldsComponent implements AfterViewInit, OnChanges, OnInit {
 
   @Input() type = "";
   @Input() account?: Account;
@@ -90,10 +90,16 @@ export class AngularIfieldsComponent implements AfterViewInit, OnChanges {
 
   constructor(private elementRef: ElementRef) { }
 
+  ngOnInit(): void {
+    this.validateProps();
+  }
+
   ngAfterViewInit(): void {
     this.messagePoster = new MessagePoster(this.iframeContentWindow.postMessage.bind(this.iframeContentWindow),
       this.log.bind(this), this.type, () => this.iFrameLoaded);
-    this.messageHandler = new MessageHandler(this.messagePoster, this.account || null, this.options, this.type, this.issuer, this.threeDS, (iframeLoaded: boolean) => this.iFrameLoaded = iframeLoaded);
+    this.messageHandler = new MessageHandler(this.messagePoster, { account: this.account, issuer: this.issuer, type: this.type, options: this.options, threeDS: this.threeDS },
+      { iFrameLoaded: this.iFrameLoaded, ifieldDataCache: this.ifieldDataCache, tokenData: this.xTokenData, tokenLoading: this.tokenLoading, tokenValid: this._tokenValid },
+      this.log.bind(this));
     window.addEventListener("message", this.onMessage);
     this.messagePoster?.ping();
   }
@@ -180,14 +186,20 @@ export class AngularIfieldsComponent implements AfterViewInit, OnChanges {
         break;
       case TOKEN:
         this.log("Message received: " + TOKEN);
-        this.onToken(data);
+        const received = this.messageHandler?.onToken(data);
+        if (received)
+          this.token.emit({ data });
+        else
+          this.iFieldError.emit({ data });
         break;
       case AUTO_SUBMIT:       //triggered when submit is fired within the iFrame
         this.log("Message received: " + AUTO_SUBMIT);
-        this.onSubmit(data);
+        this.submit.emit({ data });       //call first before submit is triggered
+        this.messageHandler?.onSubmit(data);
         break;
       case UPDATE:
         this.log("Message received: " + UPDATE);
+        this.messageHandler?.onUpdate(data);
         this.onUpdate(data);
         break;
       default:
@@ -195,37 +207,11 @@ export class AngularIfieldsComponent implements AfterViewInit, OnChanges {
     }
     if (this.threeDS && this.threeDS.enable3DS && data.eci && data.eci.length && this.type === CARD_TYPE) {
       this.log("Message received: eci");
-      this.postMessage(data);
-    }
-  }
-
-  onToken({ data }: any) {
-    this.tokenLoading = false;
-    if (data.result === ERROR) {
-      this.latestErrorTime = new Date();
-      this.log("Token Error: " + data.errorMessage);
-      this.tokenValid = false;
-      this.iFieldError.emit({ data });
-    } else {
-      this.xTokenData = data;
-      this.tokenValid = true;
-      this.token.emit({ data });
+      this.messagePoster?.postMessage(data);
     }
   }
 
   onUpdate({ data }: any) {
-    this.ifieldDataCache = {
-      length: this.type === CARD_TYPE ? data.cardNumberLength : data.length,
-      isEmpty: data.isEmpty,
-      isValid: data.isValid
-    };
-    if (data.isValid && !this.tokenValid && !this.tokenLoading) {
-      this.tokenLoading = true;
-      this.messagePoster?.getToken();
-    }
-    if (!data.isValid) {
-      this.tokenValid = false;
-    }
     switch (data.event) {
       case 'input':
         this.input.emit({ data });
@@ -252,23 +238,6 @@ export class AngularIfieldsComponent implements AfterViewInit, OnChanges {
         break;
     }
     this.update.emit({ data });
-  }
-
-  onSubmit({ data }: { data: SubmitData }) {
-    //call first before submit is triggered
-    this.submit.emit({ data });
-    if (data && data.formId) {
-      document?.getElementById(data.formId)?.dispatchEvent(
-        new Event("submit", {
-          bubbles: true,
-          cancelable: true
-        })
-      );
-    }
-  }
-
-  postMessage(data: DataMessage) {
-    this.messagePoster?.postMessage(data);
   }
 
   validateProps() {

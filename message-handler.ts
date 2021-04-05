@@ -1,36 +1,76 @@
-import { Account, Options, ThreeDS } from "../typings";
-import { AMOUNT, CARD_TYPE, CVV_TYPE, MONTH, YEAR } from "./constants";
+import { Account, Options, ThreeDS, ComponentProperties, DataStore, SubmitData } from "../typings";
+import { AMOUNT, CARD_TYPE, CVV_TYPE, ERROR, MONTH, YEAR } from "./constants";
 import { transformAccountData } from "./functions";
 import MessagePoster from "./message-poster";
 
 export default class MessageHandler {
 
-  constructor(private messagePoster: MessagePoster, private account: Account | null, private options: Options, private type: string, private issuer: string, private threeDS: ThreeDS, private setIframeLoaded: (x: boolean) => void) { }
+  constructor(private messagePoster: MessagePoster, private props: ComponentProperties, private store: DataStore, private log: (message: string) => void) { }
 
   onLoad() {
-    this.setIframeLoaded(true);
-    if (this.account) {
-      const newAccount = transformAccountData(this.account);
+    this.store.iFrameLoaded = true;
+    if (this.props.account) {
+      const newAccount = transformAccountData(this.props.account);
       this.messagePoster?.setAccount(newAccount);
     }
-    if (this.type === CARD_TYPE && this.threeDS && this.threeDS.enable3DS) {
-      this.messagePoster?.enable3DS(this.threeDS.waitForResponse, this.threeDS.waitForResponseTimeout);
-      this.messagePoster?.update3DS(AMOUNT, this.threeDS.amount);
-      this.messagePoster?.update3DS(MONTH, this.threeDS.month);
-      this.messagePoster?.update3DS(YEAR, this.threeDS.year);
+    if (this.props.type === CARD_TYPE && this.props.threeDS && this.props.threeDS.enable3DS) {
+      this.messagePoster?.enable3DS(this.props.threeDS.waitForResponse, this.props.threeDS.waitForResponseTimeout);
+      this.messagePoster?.update3DS(AMOUNT, this.props.threeDS.amount);
+      this.messagePoster?.update3DS(MONTH, this.props.threeDS.month);
+      this.messagePoster?.update3DS(YEAR, this.props.threeDS.year);
     }
     this.messagePoster?.init();
-    if (this.type === CVV_TYPE && this.issuer)
-      this.messagePoster?.updateIssuer(this.issuer);
-    if (this.options.placeholder)
-      this.messagePoster?.setPlaceholder(this.options.placeholder);
-    if (this.options.enableLogging)
+    if (this.props.type === CVV_TYPE && this.props.issuer)
+      this.messagePoster?.updateIssuer(this.props.issuer);
+    if (this.props.options.placeholder)
+      this.messagePoster?.setPlaceholder(this.props.options.placeholder);
+    if (this.props.options.enableLogging)
       this.messagePoster?.enableLogging();
-    if (this.type === CARD_TYPE && this.options.autoFormat)
-      this.messagePoster?.enableAutoFormat(this.options.autoFormatSeparator);
-    if (this.options.autoSubmit)
-      this.messagePoster?.enableAutoSubmit(this.options.autoSubmitFormId);
-    if (this.options.iFieldstyle)
-      this.messagePoster?.setStyle(this.options.iFieldstyle);
+    if (this.props.type === CARD_TYPE && this.props.options.autoFormat)
+      this.messagePoster?.enableAutoFormat(this.props.options.autoFormatSeparator);
+    if (this.props.options.autoSubmit)
+      this.messagePoster?.enableAutoSubmit(this.props.options.autoSubmitFormId);
+    if (this.props.options.iFieldstyle)
+      this.messagePoster?.setStyle(this.props.options.iFieldstyle);
+  }
+
+  onToken({ data }: any) {
+    this.store.tokenLoading = false;
+    if (data.result === ERROR) {
+      this.log("Token Error: " + data.errorMessage);
+      this.store.tokenValid = false;
+      return false;
+    } else {
+      this.store.tokenData = data;
+      this.store.tokenValid = true;
+      return true;
+    }
+  }
+
+  onUpdate({ data }: any) {
+    this.store.ifieldDataCache = {
+      length: this.props.type === CARD_TYPE ? data.cardNumberLength : data.length,
+      isEmpty: data.isEmpty,
+      isValid: data.isValid
+    };
+    //TODO: handle tokenValid getter
+    if (data.isValid && !this.store.tokenValid && !this.store.tokenLoading) {
+      this.store.tokenLoading = true;
+      this.messagePoster?.getToken();
+    }
+    if (!data.isValid) {
+      this.store.tokenValid = false;
+    }
+  }
+
+  onSubmit({ data }: { data: SubmitData }) {
+    if (data && data.formId) {
+      document?.getElementById(data.formId)?.dispatchEvent(
+        new Event("submit", {
+          bubbles: true,
+          cancelable: true
+        })
+      );
+    }
   }
 }
