@@ -4,10 +4,12 @@ import { CLEAR_DATA, ENABLE3DS, ENABLE_AUTO_SUBMIT, ENABLE_LOGGING, FOCUS, FORMA
 
 export default class MessagePoster{
 
-  constructor(private post: PostDelegate, private log: (message: string) => void, private type: string, private iFrameLoaded: () => boolean) { }
+  constructor(private post: PostDelegate, private log: (message: string) => void, private type: string) { }
   
+  iFrameLoaded = false;
+
   postMessage(data: DataMessage | InitMessage | IssuerMessage) {
-    if (!this.iFrameLoaded() && data.action !== PING) {
+    if (!this.iFrameLoaded && data.action !== PING) {
       this.log("Iframe not loaded");
       this.ping();
       return;

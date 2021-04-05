@@ -8,7 +8,7 @@ export default class MessageHandler {
   constructor(private messagePoster: MessagePoster, private props: ComponentProperties, private store: DataStore, private log: (message: string) => void) { }
 
   onLoad() {
-    this.store.iFrameLoaded = true;
+    this.messagePoster.iFrameLoaded = true;
     if (this.props.account) {
       const newAccount = transformAccountData(this.props.account);
       this.messagePoster?.setAccount(newAccount);

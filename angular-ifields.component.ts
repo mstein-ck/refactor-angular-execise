@@ -66,7 +66,6 @@ export class AngularIfieldsComponent implements AfterViewInit, OnChanges, OnInit
   @Output() update: EventEmitter<any> = new EventEmitter();
   @Output() submit: EventEmitter<any> = new EventEmitter();
 
-  iFrameLoaded = false;
   ifieldDataCache = {};
   latestErrorTime?: Date;
   xTokenData?: TokenData;
@@ -96,7 +95,7 @@ export class AngularIfieldsComponent implements AfterViewInit, OnChanges, OnInit
 
   ngAfterViewInit(): void {
     this.messagePoster = new MessagePoster(this.iframeContentWindow.postMessage.bind(this.iframeContentWindow),
-      this.log.bind(this), this.type, () => this.iFrameLoaded);
+      this.log.bind(this), this.type);
     this.messageHandler = new MessageHandler(this.messagePoster, { account: this.account, issuer: this.issuer, type: this.type, options: this.options, threeDS: this.threeDS },
       { iFrameLoaded: this.iFrameLoaded, ifieldDataCache: this.ifieldDataCache, tokenData: this.xTokenData, tokenLoading: this.tokenLoading, tokenValid: this._tokenValid },
       this.log.bind(this));
