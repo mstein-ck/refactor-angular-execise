@@ -171,8 +171,8 @@ export class AngularIfieldsComponent implements AfterViewInit, OnChanges, OnInit
         break;
       case TOKEN:
         this.log("Message received: " + TOKEN);
-        const received = this.messageHandler?.onToken(data);
-        if (received)
+        this.messageHandler?.onToken(data);
+        if (this.messageHandler?.tokenValid)
           this.token.emit({ data });
         else
           this.iFieldError.emit({ data });
