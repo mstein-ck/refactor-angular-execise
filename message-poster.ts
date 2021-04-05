@@ -6,8 +6,6 @@ export default class MessagePoster{
 
   constructor(private post: PostDelegate, private options: Options, private type: string, private iFrameLoaded: () => boolean) { }
   
-  
-
   postMessage(data: DataMessage | InitMessage | IssuerMessage) {
     if (!this.iFrameLoaded() && data.action !== PING) {
       this.log("Iframe not loaded");

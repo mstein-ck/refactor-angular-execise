@@ -29,6 +29,7 @@ import {
   IFIELDS_VERSION
 } from "./constants";
 import { transformAccountData } from './functions';
+import MessageHandler from './message-handler';
 import MessagePoster from './message-poster';
 
 const iframeSrc = `https://cdn.cardknox.com/ifields/${IFIELDS_VERSION}/ifield.htm`;
@@ -73,6 +74,7 @@ export class AngularIfieldsComponent implements AfterViewInit, OnChanges {
   tokenLoading = false;
 
   private messagePoster?: MessagePoster;
+  private messageHandler?: MessageHandler;
 
   get tokenValid(): boolean {
     return this._tokenValid && !!this.xTokenData && !!this.xTokenData?.xToken;
@@ -91,6 +93,7 @@ export class AngularIfieldsComponent implements AfterViewInit, OnChanges {
   ngAfterViewInit(): void {
     this.messagePoster = new MessagePoster(this.iframeContentWindow.postMessage.bind(this.iframeContentWindow),
       this.options, this.type, () => this.iFrameLoaded);
+    this.messageHandler = new MessageHandler(this.messagePoster, this.account || null, this.options, this.type, this.issuer, this.threeDS, (iframeLoaded: boolean) => this.iFrameLoaded = iframeLoaded);
     window.addEventListener("message", this.onMessage);
     this.messagePoster?.ping();
   }
@@ -172,7 +175,8 @@ export class AngularIfieldsComponent implements AfterViewInit, OnChanges {
     switch (data.action) {
       case LOADED:
         this.log("Message received: ifield loaded");
-        this.onLoad();
+        this.messageHandler?.onLoad();
+        this.load.emit();
         break;
       case TOKEN:
         this.log("Message received: " + TOKEN);
@@ -220,7 +224,6 @@ export class AngularIfieldsComponent implements AfterViewInit, OnChanges {
       this.messagePoster?.enableAutoSubmit(this.options.autoSubmitFormId);
     if (this.options.iFieldstyle)
       this.messagePoster?.setStyle(this.options.iFieldstyle);
-    this.load.emit();
   }
 
   onToken({ data }: any) {
