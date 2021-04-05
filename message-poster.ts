@@ -4,8 +4,6 @@ import { CLEAR_DATA, ENABLE3DS, ENABLE_AUTO_SUBMIT, ENABLE_LOGGING, FOCUS, FORMA
 
 export default class MessagePoster{
 
-  tokenLoading: boolean = false;
-
   constructor(private post: PostDelegate, private options: Options, private type: string, private iFrameLoaded: () => boolean) { }
   
   
@@ -61,7 +59,6 @@ export default class MessagePoster{
       action: GET_TOKEN
     };
     this.logAction(GET_TOKEN);
-    this.tokenLoading = true;
     this.postMessage(message);
   }
 

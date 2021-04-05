@@ -240,6 +240,7 @@ export class AngularIfieldsComponent implements AfterViewInit, OnChanges {
       isValid: data.isValid
     };
     if (data.isValid && !this.tokenValid && !this.tokenLoading) {
+      this.tokenLoading = true;
       this.messagePoster?.getToken();
     }
     if (!data.isValid) {
