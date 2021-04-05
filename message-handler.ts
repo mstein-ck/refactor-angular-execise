@@ -8,7 +8,7 @@ export default class MessageHandler {
   ifieldDataCache = {};
   latestErrorTime?: Date;
   tokenData?: TokenData;
-  tokenValid = false;
+  _tokenValid = false;
   tokenLoading = false;
 
   constructor(private messagePoster: MessagePoster, private props: ComponentProperties, private log: (message: string) => void) { }
@@ -38,7 +38,14 @@ export default class MessageHandler {
       this.messagePoster?.enableAutoSubmit(this.props.options.autoSubmitFormId);
     if (this.props.options.iFieldstyle)
       this.messagePoster?.setStyle(this.props.options.iFieldstyle);
+  get tokenValid(): boolean {       //TODO: refactor
+    return this._tokenValid && !!this.tokenData && !!this.tokenData?.xToken;
+
   }
+  set tokenValid(value: boolean) {
+    this._tokenValid = value;
+  }
+
 
   onToken({ data }: any) {
     this.tokenLoading = false;
