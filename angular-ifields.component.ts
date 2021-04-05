@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
-import { OutMessage, Account, Options, ThreeDS, TokenData, SubmitData } from '../typings';
+import { DataMessage, Account, Options, ThreeDS, TokenData, SubmitData } from '../typings';
 import {
   PING,
   STYLE,
@@ -287,7 +287,7 @@ export class AngularIfieldsComponent implements AfterViewInit, OnChanges {
     }
   }
 
-  postMessage(data: OutMessage) {
+  postMessage(data: DataMessage) {
     this.messagePoster?.postMessage(data);
   }
 
