@@ -84,8 +84,7 @@ export class AngularIfieldsComponent implements AfterViewInit, OnChanges, OnInit
   ngAfterViewInit(): void {
     this.messagePoster = new MessagePoster(this.iframeContentWindow.postMessage.bind(this.iframeContentWindow),
       this.log.bind(this), this.type);
-    this.messageHandler = new MessageHandler(this.messagePoster, { account: this.account, issuer: this.issuer, type: this.type, options: this.options, threeDS: this.threeDS },
-      this.log.bind(this));
+    this.messageHandler = new MessageHandler(this.messagePoster, this.type, this.log.bind(this));
     window.addEventListener("message", this.onMessage);
     this.messagePoster?.ping();
   }
@@ -167,7 +166,7 @@ export class AngularIfieldsComponent implements AfterViewInit, OnChanges, OnInit
     switch (data.action) {
       case LOADED:
         this.log("Message received: ifield loaded");
-        this.messageHandler?.onLoad();
+        this.onLoad();
         this.load.emit();
         break;
       case TOKEN:
@@ -225,6 +224,34 @@ export class AngularIfieldsComponent implements AfterViewInit, OnChanges, OnInit
     }
     this.update.emit({ data });
   }
+  onLoad() {
+    if (this.messagePoster)
+      this.messagePoster.iFrameLoaded = true;
+    if (this.account) {
+      const newAccount = transformAccountData(this.account);
+      this.messagePoster?.setAccount(newAccount);
+    }
+    if (this.type === CARD_TYPE && this.threeDS && this.threeDS.enable3DS) {
+      this.messagePoster?.enable3DS(this.threeDS.waitForResponse, this.threeDS.waitForResponseTimeout);
+      this.messagePoster?.update3DS(AMOUNT, this.threeDS.amount);
+      this.messagePoster?.update3DS(MONTH, this.threeDS.month);
+      this.messagePoster?.update3DS(YEAR, this.threeDS.year);
+    }
+    this.messagePoster?.init();
+    if (this.type === CVV_TYPE && this.issuer)
+      this.messagePoster?.updateIssuer(this.issuer);
+    if (this.options.placeholder)
+      this.messagePoster?.setPlaceholder(this.options.placeholder);
+    if (this.options.enableLogging)
+      this.messagePoster?.enableLogging();
+    if (this.type === CARD_TYPE && this.options.autoFormat)
+      this.messagePoster?.enableAutoFormat(this.options.autoFormatSeparator);
+    if (this.options.autoSubmit)
+      this.messagePoster?.enableAutoSubmit(this.options.autoSubmitFormId);
+    if (this.options.iFieldstyle)
+      this.messagePoster?.setStyle(this.options.iFieldstyle);
+  }
+
 
   validateProps() {
     var accountProps = this.account
