@@ -29,6 +29,7 @@ import {
   IFIELDS_VERSION
 } from "./constants";
 import { transformAccountData } from './functions';
+import MessagePoster from './message-poster';
 
 const iframeSrc = `https://cdn.cardknox.com/ifields/${IFIELDS_VERSION}/ifield.htm`;
 
@@ -71,6 +72,8 @@ export class AngularIfieldsComponent implements AfterViewInit, OnChanges {
   _tokenValid = false;
   tokenLoading = false;
 
+  private messagePoster?: MessagePoster;
+
   get tokenValid(): boolean {
     return this._tokenValid && !!this.xTokenData && !!this.xTokenData?.xToken;
 
@@ -82,6 +85,7 @@ export class AngularIfieldsComponent implements AfterViewInit, OnChanges {
   constructor(private elementRef: ElementRef) { }
 
   ngAfterViewInit(): void {
+    this.messagePoster = new MessagePoster(this.elementRef.nativeElement.children[0].contentWindow.postMessage.bind(this.elementRef.nativeElement.children[0].contentWindow), this.options, this.type, () => this.iFrameLoaded);
     window.addEventListener("message", this.onMessage);
     this.ping();
   }
@@ -412,12 +416,7 @@ export class AngularIfieldsComponent implements AfterViewInit, OnChanges {
   }
 
   postMessage(data: OutMessage) {
-    if (!this.iFrameLoaded && data.action !== PING) {
-      this.log("Iframe not loaded");
-      this.ping();
-      return;
-    }
-    this.elementRef.nativeElement.children[0].contentWindow.postMessage(data, "*");
+    this.messagePoster?.postMessage(data);
   }
 
   validateProps() {
