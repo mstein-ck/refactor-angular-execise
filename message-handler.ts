@@ -59,14 +59,16 @@ export default class MessageHandler {
       isEmpty: data.isEmpty,
       isValid: data.isValid
     };
-    //TODO: handle tokenValid getter
-    if (data.isValid && !this.tokenValid && !this.tokenLoading) {
+    if (this.shouldRefreshToken(data)) {
       this.tokenLoading = true;
       this.messagePoster?.getToken();
     }
     if (!data.isValid) {
       this.tokenValid = false;
     }
+  }
+  shouldRefreshToken(data: any) {
+    return data.isValid && !this.tokenValid && !this.tokenLoading;
   }
 
   onSubmit({ data }: { data: SubmitData }) {
