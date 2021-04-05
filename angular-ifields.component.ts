@@ -66,22 +66,10 @@ export class AngularIfieldsComponent implements AfterViewInit, OnChanges, OnInit
   @Output() update: EventEmitter<any> = new EventEmitter();
   @Output() submit: EventEmitter<any> = new EventEmitter();
 
-  ifieldDataCache = {};
-  latestErrorTime?: Date;
-  xTokenData?: TokenData;
-  _tokenValid = false;
-  tokenLoading = false;
 
   private messagePoster?: MessagePoster;
   private messageHandler?: MessageHandler;
 
-  get tokenValid(): boolean {
-    return this._tokenValid && !!this.xTokenData && !!this.xTokenData?.xToken;
-
-  }
-  set tokenValid(value: boolean) {
-    this._tokenValid = value;
-  }
 
   get iframeContentWindow() {
     return this.elementRef.nativeElement.children[0].contentWindow;
@@ -97,7 +85,6 @@ export class AngularIfieldsComponent implements AfterViewInit, OnChanges, OnInit
     this.messagePoster = new MessagePoster(this.iframeContentWindow.postMessage.bind(this.iframeContentWindow),
       this.log.bind(this), this.type);
     this.messageHandler = new MessageHandler(this.messagePoster, { account: this.account, issuer: this.issuer, type: this.type, options: this.options, threeDS: this.threeDS },
-      { iFrameLoaded: this.iFrameLoaded, ifieldDataCache: this.ifieldDataCache, tokenData: this.xTokenData, tokenLoading: this.tokenLoading, tokenValid: this._tokenValid },
       this.log.bind(this));
     window.addEventListener("message", this.onMessage);
     this.messagePoster?.ping();

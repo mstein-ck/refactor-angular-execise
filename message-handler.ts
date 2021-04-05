@@ -1,11 +1,17 @@
-import { Account, Options, ThreeDS, ComponentProperties, DataStore, SubmitData } from "../typings";
+import { Account, Options, ThreeDS, ComponentProperties, DataStore, SubmitData, TokenData } from "../typings";
 import { AMOUNT, CARD_TYPE, CVV_TYPE, ERROR, MONTH, YEAR } from "./constants";
 import { transformAccountData } from "./functions";
 import MessagePoster from "./message-poster";
 
 export default class MessageHandler {
 
-  constructor(private messagePoster: MessagePoster, private props: ComponentProperties, private store: DataStore, private log: (message: string) => void) { }
+  ifieldDataCache = {};
+  latestErrorTime?: Date;
+  tokenData?: TokenData;
+  tokenValid = false;
+  tokenLoading = false;
+
+  constructor(private messagePoster: MessagePoster, private props: ComponentProperties, private log: (message: string) => void) { }
 
   onLoad() {
     this.messagePoster.iFrameLoaded = true;
@@ -35,31 +41,31 @@ export default class MessageHandler {
   }
 
   onToken({ data }: any) {
-    this.store.tokenLoading = false;
+    this.tokenLoading = false;
     if (data.result === ERROR) {
       this.log("Token Error: " + data.errorMessage);
-      this.store.tokenValid = false;
+      this.tokenValid = false;
       return false;
     } else {
-      this.store.tokenData = data;
-      this.store.tokenValid = true;
+      this.tokenData = data;
+      this.tokenValid = true;
       return true;
     }
   }
 
   onUpdate({ data }: any) {
-    this.store.ifieldDataCache = {
+    this.ifieldDataCache = {
       length: this.props.type === CARD_TYPE ? data.cardNumberLength : data.length,
       isEmpty: data.isEmpty,
       isValid: data.isValid
     };
     //TODO: handle tokenValid getter
-    if (data.isValid && !this.store.tokenValid && !this.store.tokenLoading) {
-      this.store.tokenLoading = true;
+    if (data.isValid && !this.tokenValid && !this.tokenLoading) {
+      this.tokenLoading = true;
       this.messagePoster?.getToken();
     }
     if (!data.isValid) {
-      this.store.tokenValid = false;
+      this.tokenValid = false;
     }
   }
 
