@@ -85,7 +85,8 @@ export class AngularIfieldsComponent implements AfterViewInit, OnChanges {
   constructor(private elementRef: ElementRef) { }
 
   ngAfterViewInit(): void {
-    this.messagePoster = new MessagePoster(this.elementRef.nativeElement.children[0].contentWindow.postMessage.bind(this.elementRef.nativeElement.children[0].contentWindow), this.options, this.type, () => this.iFrameLoaded);
+    this.messagePoster = new MessagePoster(this.elementRef.nativeElement.children[0].contentWindow.postMessage.bind(this.elementRef.nativeElement.children[0].contentWindow),
+      this.options, this.type, () => this.iFrameLoaded);
     window.addEventListener("message", this.onMessage);
     this.ping();
   }
