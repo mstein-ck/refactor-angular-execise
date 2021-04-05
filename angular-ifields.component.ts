@@ -82,10 +82,14 @@ export class AngularIfieldsComponent implements AfterViewInit, OnChanges {
     this._tokenValid = value;
   }
 
+  get iframeContentWindow() {
+    return this.elementRef.nativeElement.children[0].contentWindow;
+  }
+
   constructor(private elementRef: ElementRef) { }
 
   ngAfterViewInit(): void {
-    this.messagePoster = new MessagePoster(this.elementRef.nativeElement.children[0].contentWindow.postMessage.bind(this.elementRef.nativeElement.children[0].contentWindow),
+    this.messagePoster = new MessagePoster(this.iframeContentWindow.postMessage.bind(this.iframeContentWindow),
       this.options, this.type, () => this.iFrameLoaded);
     window.addEventListener("message", this.onMessage);
     this.messagePoster?.ping();
