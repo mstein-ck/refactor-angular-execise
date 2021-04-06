@@ -104,7 +104,6 @@ export default class MessagePoster{
     this.logAction(ENABLE_LOGGING);
     this.postMessage({
       action: ENABLE_LOGGING
-      //TODO: should this have a bool param
     });
   }
 
