@@ -1,23 +1,14 @@
-import { SubmitData, TokenData } from "../typings";
+import { IfieldDataCache, SubmitData, TokenData, UpdateData } from "../typings";
 import { CARD_TYPE, ERROR } from "./constants";
 import MessagePoster from "./message-poster";
 
 export default class MessageHandler {
 
-  ifieldDataCache = {};
+  ifieldDataCache?: IfieldDataCache;
   latestErrorTime?: Date;
   tokenData?: TokenData;
-  _tokenValid = false;
+  tokenValid = false;
   tokenLoading = false;
-
-
-  get tokenValid(): boolean {       //TODO: refactor
-    return this._tokenValid && !!this.tokenData && !!this.tokenData?.xToken;
-
-  }
-  set tokenValid(value: boolean) {
-    this._tokenValid = value;
-  }
 
   constructor(private messagePoster: MessagePoster, private type: string, private log: (message: string) => void) { }
 
@@ -49,8 +40,15 @@ export default class MessageHandler {
       this.tokenValid = false;
     }
   }
-  shouldRefreshToken(data: any) {
-    return data.isValid && !this.tokenValid && !this.tokenLoading;
+
+  shouldRefreshToken(data: UpdateData) {
+    if (!data.isValid) return false;
+    if (this.tokenLoading) return false;
+    return !this.cachedTokenValid();
+  }
+
+  cachedTokenValid() {
+    return this.tokenValid && !!this.tokenData && !!this.tokenData?.xToken;
   }
 
   onSubmit({ data }: { data: SubmitData }) {
