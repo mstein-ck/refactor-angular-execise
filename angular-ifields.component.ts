@@ -173,9 +173,9 @@ export class AngularIfieldsComponent implements AfterViewInit, OnChanges, OnInit
         this.log("Message received: " + TOKEN);
         this.messageHandler?.onToken(data);
         if (this.messageHandler?.tokenValid)
-          this.token.emit({ data });
+          this.token.emit(data);
         else
-          this.iFieldError.emit({ data });
+          this.iFieldError.emit(data);
         break;
       case AUTO_SUBMIT:       //triggered when submit is fired within the iFrame
         this.log("Message received: " + AUTO_SUBMIT);
