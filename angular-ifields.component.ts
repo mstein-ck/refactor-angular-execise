@@ -1,33 +1,6 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
-import { DataMessage, Account, Options, ThreeDS, TokenData, SubmitData } from '../typings';
-import {
-  PING,
-  STYLE,
-  GET_TOKEN,
-  INIT,
-  FORMAT,
-  SET_PLACEHOLDER,
-  FOCUS,
-  CLEAR_DATA,
-  SET_ACCOUNT_DATA,
-  ENABLE_LOGGING,
-  ENABLE_AUTO_SUBMIT,
-  ENABLE3DS,
-  UPDATE3DS,
-  UPDATE_ISSUER,
-  LOADED,
-  TOKEN,
-  ERROR,
-  AUTO_SUBMIT,
-  UPDATE,
-  AMOUNT,
-  MONTH,
-  YEAR,
-  CARD_TYPE,
-  CVV_TYPE,
-  AUTO_FORMAT_DEFAULT_SEPARATOR,
-  IFIELDS_VERSION
-} from "./constants";
+import { Account, Options, ThreeDS } from '../typings';
+import { LOADED, TOKEN, AUTO_SUBMIT, UPDATE, AMOUNT, MONTH, YEAR, CARD_TYPE, CVV_TYPE, IFIELDS_VERSION } from "./constants";
 import { transformAccountData } from './functions';
 import MessageHandler from './message-handler';
 import MessagePoster from './message-poster';
@@ -251,7 +224,6 @@ export class AngularIfieldsComponent implements AfterViewInit, OnChanges, OnInit
     if (this.options.iFieldstyle)
       this.messagePoster?.setStyle(this.options.iFieldstyle);
   }
-
 
   validateProps() {
     var accountProps = this.account

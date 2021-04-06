@@ -1,6 +1,5 @@
-import { Account, Options, ThreeDS, ComponentProperties, DataStore, SubmitData, TokenData } from "../typings";
-import { AMOUNT, CARD_TYPE, CVV_TYPE, ERROR, MONTH, YEAR } from "./constants";
-import { transformAccountData } from "./functions";
+import { SubmitData, TokenData } from "../typings";
+import { CARD_TYPE, ERROR } from "./constants";
 import MessagePoster from "./message-poster";
 
 export default class MessageHandler {

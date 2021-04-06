@@ -1,5 +1,5 @@
 
-import { Account, Options, DataMessage, PostDelegate, InitMessage, IssuerMessage } from "../typings";
+import { Account, DataMessage, PostDelegate, InitMessage, IssuerMessage } from "../typings";
 import { CLEAR_DATA, ENABLE3DS, ENABLE_AUTO_SUBMIT, ENABLE_LOGGING, FOCUS, FORMAT, GET_TOKEN, INIT, PING, SET_ACCOUNT_DATA, SET_PLACEHOLDER, STYLE, UPDATE3DS, UPDATE_ISSUER } from "./constants";
 
 export default class MessagePoster{
