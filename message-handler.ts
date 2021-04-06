@@ -32,9 +32,12 @@ export default class MessageHandler {
     }
   }
 
-  onUpdate({ data }: any) {
+  onUpdate({ data }: { data: UpdateData }) {
+    const length = this.type === CARD_TYPE ? data.cardNumberLength : data.length;
+    if (length !== this.ifieldDataCache?.length)
+      this.tokenValid = false;
     this.ifieldDataCache = {
-      length: this.type === CARD_TYPE ? data.cardNumberLength : data.length,
+      length,
       isEmpty: data.isEmpty,
       isValid: data.isValid
     };
